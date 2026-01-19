@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Resources Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            direction: ltr;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        td input[type="text"],
+        td input[type="number"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        td textarea {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .image-cell {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .image-placeholder {
+            width: 113px;
+            height: 113px;
+            border: 2px dashed #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            background-color: #fafafa;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .image-preview {
+            width: 113px;
+            height: 113px;
+            margin: 0 auto 8px;
+            border: 1px solid #ddd;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .btn-add-image {
+            background-color: #9C27B0;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            width: 113px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn-add-image:hover {
+            background-color: #7B1FA2;
+        }
+
+        .btn-remove-image {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 113px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn-remove-image:hover {
+            background-color: #d32f2f;
+        }
+
+        .btn-delete-row {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-delete-row:hover {
+            background-color: #d32f2f;
+        }
+
+        .total-section {
+            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+
+        .btn-warning {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e68900;
+        }
+
+        .hidden {
+            display: none;
+        }
+.btn-success {
+  background-color: #4CAF50;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #43a047;
+}
+/* ===== Footer ===== */
+.app-footer {
+  margin-top: 40px;
+  padding: 14px 18px;
+  background: #f5f5f5;
+  border-top: 1px solid #ddd;
+  font-size: 13px;
+  color: #444;
+   text-align: center;
+}
+
+.footer-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.app-footer .copyright {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.app-footer .disclaimer {
+  font-weight: 400;
+  color: #555;
+}
+.btn-add {
+  background-color: #6f42c1;   
+  color: #fff;
+  border: none;
+}
+
+.btn-add:hover {
+  background-color: #5a32a3;  
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Training Resources Management Tool</h1>
+        
+        <div class="header-section">
+            <div>
+                <div class="form-group">
+                    <label>Organization Name:</label>
+                    <input type="text" id="orgName" placeholder="Enter organization name">
+                </div>
+                <div class="form-group">
+                    <label>Training Title:</label>
+                    <input type="text" id="trainingTitle" placeholder="Enter training title">
+                </div>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label>Prepared By:</label>
+                    <input type="text" id="preparedBy" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="prepDate">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="resourcesTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Specification</th>
+                        <th>Unit Cost</th>
+                        <th>Total Cost</th>
+                        <th>Image</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="total-section">
+            Grand Total: <span id="grandTotal">0.00</span>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="addRow()">➕ Add Row</button>
+            <button class="btn btn-secondary" onclick="saveToJSON()">💾 Save JSON</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('loadJSON').click()">📂 Load JSON</button>
+            <button class="btn btn-warning" onclick="exportToDOCX()">📄 Export DOCX</button>
+           <button class="btn btn-success" onclick="exportToExcelXLSX()">📊 Export Excel </button>
+
+       </div>
+
+        <input type="file" id="loadJSON" class="hidden" accept=".json" onchange="loadFromJSON(event)">
+    </div>
+
+    <script>
+        let rowCounter = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            addRow();
+            document.getElementById('prepDate').valueAsDate = new Date();
+        });
+
+        function addRow() {
+            rowCounter++;
+            const tbody = document.getElementById('tableBody');
+            const row = tbody.insertRow();
+            row.id = `row-${rowCounter}`;
+            
+            row.innerHTML = `
+                <td><input type="text" class="item-name" placeholder="Item name"></td>
+                <td><input type="number" class="quantity" min="0" value="1" onchange="calculateRow(this)"></td>
+                <td><input type="text" class="unit" placeholder="e.g., pcs, kg"></td>
+                <td><textarea class="specification" placeholder="Enter specifications"></textarea></td>
+                <td><input type="number" class="unit-cost" min="0" step="0.01" value="0" onchange="calculateRow(this)"></td>
+                <td><input type="number" class="total-cost" readonly value="0"></td>
+                <td class="image-cell">
+                    <div class="image-placeholder" id="placeholder-${rowCounter}">No image</div>
+                    <button class="btn-add-image" onclick="selectImage(${rowCounter})">📷 Add Image</button>
+                    <input type="file" id="imageInput-${rowCounter}" class="hidden" accept="image/*" onchange="handleImageUpload(event, ${rowCounter})">
+                    <div id="imagePreview-${rowCounter}" class="hidden"></div>
+                    <button id="removeBtn-${rowCounter}" class="btn-remove-image hidden" onclick="removeImage(${rowCounter})">🗑️</button>
+                </td>
+                <td><button class="btn-delete-row" onclick="deleteRow(this)">🗑️</button></td>
+            `;
+        }
+
+        function calculateRow(element) {
+            const row = element.closest('tr');
+            const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+            const unitCost = parseFloat(row.querySelector('.unit-cost').value) || 0;
+            const total = quantity * unitCost;
+            row.querySelector('.total-cost').value = total.toFixed(2);
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            const totals = document.querySelectorAll('.total-cost');
+            let grandTotal = 0;
+            totals.forEach(input => {
+                grandTotal += parseFloat(input.value) || 0;
+            });
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        }
+
+        function deleteRow(button) {
+            if (confirm('Delete this row?')) {
+                button.closest('tr').remove();
+                calculateGrandTotal();
+            }
+        }
+
+        function selectImage(rowId) {
+            document.getElementById(`imageInput-${rowId}`).click();
+        }
+
+        function handleImageUpload(event, rowId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    displayImage(rowId, base64);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function displayImage(rowId, base64) {
+            const placeholder = document.getElementById(`placeholder-${rowId}`);
+            const previewDiv = document.getElementById(`imagePreview-${rowId}`);
+            const removeBtn = document.getElementById(`removeBtn-${rowId}`);
+            const addBtn = placeholder.nextElementSibling;
+
+            placeholder.classList.add('hidden');
+            addBtn.classList.add('hidden');
+            previewDiv.classList.remove('hidden');
+            removeBtn.classList.remove('hidden');
+
+            previewDiv.className = 'image-preview';
+            previewDiv.innerHTML = `<img src="${base64}" alt="Resource image">`;
+            previewDiv.dataset.image = base64;
+        }
+
+        function removeImage(rowId) {
+            const placeholder = document.getElementById(`placeholder-${rowId}`);
+            const previewDiv = document.getElementById(`imagePreview-${rowId}`);
+            const removeBtn = document.getElementById(`removeBtn-${rowId}`);
+            const addBtn = placeholder.nextElementSibling;
+            const fileInput = document.getElementById(`imageInput-${rowId}`);
+
+            placeholder.classList.remove('hidden');
+            addBtn.classList.remove('hidden');
+            previewDiv.classList.add('hidden');
+            removeBtn.classList.add('hidden');
+
+            previewDiv.innerHTML = '';
+            delete previewDiv.dataset.image;
+            fileInput.value = '';
+        }
+
+        function saveToJSON() {
+            const data = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                header: {
+                    orgName: document.getElementById('orgName').value,
+                    trainingTitle: document.getElementById('trainingTitle').value,
+                    preparedBy: document.getElementById('preparedBy').value,
+                    prepDate: document.getElementById('prepDate').value
+                },
+                rows: []
+            };
+
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                const rowId = row.id.split('-')[1];
+                const previewDiv = document.getElementById(`imagePreview-${rowId}`);
+                
+                data.rows.push({
+                    itemName: row.querySelector('.item-name').value,
+                    quantity: row.querySelector('.quantity').value,
+                    unit: row.querySelector('.unit').value,
+                    specification: row.querySelector('.specification').value,
+                    unitCost: row.querySelector('.unit-cost').value,
+                    totalCost: row.querySelector('.total-cost').value,
+                    image: previewDiv.dataset.image || null
+                });
+            });
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `training_resources_${new Date().getTime()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    document.getElementById('orgName').value = data.header.orgName || '';
+                    document.getElementById('trainingTitle').value = data.header.trainingTitle || '';
+                    document.getElementById('preparedBy').value = data.header.preparedBy || '';
+                    document.getElementById('prepDate').value = data.header.prepDate || '';
+
+                    document.getElementById('tableBody').innerHTML = '';
+                    rowCounter = 0;
+
+                    data.rows.forEach(rowData => {
+                        addRow();
+                        const row = document.querySelector('#tableBody tr:last-child');
+                        
+                        row.querySelector('.item-name').value = rowData.itemName || '';
+                        row.querySelector('.quantity').value = rowData.quantity || 1;
+                        row.querySelector('.unit').value = rowData.unit || '';
+                        row.querySelector('.specification').value = rowData.specification || '';
+                        row.querySelector('.unit-cost').value = rowData.unitCost || 0;
+                        row.querySelector('.total-cost').value = rowData.totalCost || 0;
+
+                        if (rowData.image) {
+                            displayImage(rowCounter, rowData.image);
+                        }
+                    });
+
+                    calculateGrandTotal();
+                    alert('Data loaded successfully!');
+                } catch (err) {
+                    alert('Error loading JSON file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function exportToDOCX() {
+            if (typeof window.docx === 'undefined') {
+                alert('Document library is still loading. Please wait and try again.');
+                return;
+            }
+const orgName =
+  document.getElementById('organizationName')?.value ||
+  document.getElementById('organization')?.value ||
+  document.getElementById('orgName')?.value ||
+  '—';
+            const trainingTitle = document.getElementById('trainingTitle').value || 'Training Resources';
+            const preparedBy = document.getElementById('preparedBy').value;
+            const prepDate = document.getElementById('prepDate').value;
+
+            try {
+                const { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, ImageRun, Packer, BorderStyle } = window.docx;
+
+                const children = [];
+
+                children.push(new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: orgName,
+                            size: 32,
+                            bold: true,
+                            rightToLeft: false,
+                        }),
+                    ],
+                    alignment: AlignmentType.CENTER,
+                    bidirectional: false,
+                    spacing: { after: 200 },
+                }));
+
+                children.push(new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: trainingTitle,
+                            size: 28,
+                            bold: true,
+                            rightToLeft: false,
+                        }),
+                    ],
+                    alignment: AlignmentType.CENTER,
+                    bidirectional: false,
+                    spacing: { after: 400 },
+                }));
+
+                if (preparedBy) {
+                    children.push(new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Prepared By: ${preparedBy}`,
+                                size: 22,
+                                rightToLeft: false,
+                            }),
+                        ],
+                        alignment: AlignmentType.LEFT,
+                        bidirectional: false,
+                        spacing: { after: 100 },
+                    }));
+                }
+
+                if (prepDate) {
+                    children.push(new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Date: ${prepDate}`,
+                                size: 22,
+                                rightToLeft: false,
+                            }),
+                        ],
+                        alignment: AlignmentType.LEFT,
+                        bidirectional: false,
+                        spacing: { after: 300 },
+                    }));
+                }
+
+                const rows = document.querySelectorAll('#tableBody tr');
+                const tableRows = [];
+
+                tableRows.push(new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Item Name', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 2000, type: WidthType.DXA },
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Quantity', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 1000, type: WidthType.DXA },
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Unit', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 1000, type: WidthType.DXA },
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Specification', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 2500, type: WidthType.DXA },
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Unit Cost', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 1200, type: WidthType.DXA },
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Total Cost', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 1200, type: WidthType.DXA },
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Image', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            width: { size: 1500, type: WidthType.DXA },
+                        }),
+                    ],
+                }));
+
+                for (let row of rows) {
+                    const rowId = row.id.split('-')[1];
+                    const previewDiv = document.getElementById(`imagePreview-${rowId}`);
+                    const imageBase64 = previewDiv?.dataset.image;
+
+                    const itemName = row.querySelector('.item-name').value || '';
+                    const quantity = row.querySelector('.quantity').value || '';
+                    const unit = row.querySelector('.unit').value || '';
+                    const specification = row.querySelector('.specification').value || '';
+                    const unitCost = row.querySelector('.unit-cost').value || '';
+                    const totalCost = row.querySelector('.total-cost').value || '';
+
+                    let imageCellChildren = [new Paragraph({ 
+                        children: [new TextRun({ text: 'No image', size: 20, rightToLeft: false })],
+                        alignment: AlignmentType.LEFT,
+                        bidirectional: false
+                    })];
+
+                    if (imageBase64) {
+                        try {
+                            const base64Data = imageBase64.split(',')[1];
+                            imageCellChildren = [new Paragraph({
+                                children: [
+                                    new ImageRun({
+                                        data: Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)),
+                                        transformation: {
+                                            width: 113,
+                                            height: 113,
+                                        },
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                                bidirectional: false,
+                            })];
+                        } catch (imgError) {
+                            console.error('Error processing image:', imgError);
+                        }
+                    }
+
+                    tableRows.push(new TableRow({
+                        children: [
+                            new TableCell({
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: itemName, size: 20, rightToLeft: false })],
+                                    alignment: AlignmentType.LEFT,
+                                    bidirectional: false
+                                })],
+                                width: { size: 2000, type: WidthType.DXA },
+                            }),
+                            new TableCell({
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: quantity, size: 20, rightToLeft: false })],
+                                    alignment: AlignmentType.LEFT,
+                                    bidirectional: false
+                                })],
+                                width: { size: 1000, type: WidthType.DXA },
+                            }),
+                            new TableCell({
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: unit, size: 20, rightToLeft: false })],
+                                    alignment: AlignmentType.LEFT,
+                                    bidirectional: false
+                                })],
+                                width: { size: 1000, type: WidthType.DXA },
+                            }),
+                            new TableCell({
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: specification, size: 20, rightToLeft: false })],
+                                    alignment: AlignmentType.LEFT,
+                                    bidirectional: false
+                                })],
+                                width: { size: 2500, type: WidthType.DXA },
+                            }),
+                            new TableCell({
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: unitCost, size: 20, rightToLeft: false })],
+                                    alignment: AlignmentType.LEFT,
+                                    bidirectional: false
+                                })],
+                                width: { size: 1200, type: WidthType.DXA },
+                            }),
+                            new TableCell({
+                                children: [new Paragraph({ 
+                                    children: [new TextRun({ text: totalCost, size: 20, rightToLeft: false })],
+                                    alignment: AlignmentType.LEFT,
+                                    bidirectional: false
+                                })],
+                                width: { size: 1200, type: WidthType.DXA },
+                            }),
+                            new TableCell({
+                                children: imageCellChildren,
+                                width: { size: 1500, type: WidthType.DXA },
+                            }),
+                        ],
+                    }));
+                }
+
+                const grandTotal = document.getElementById('grandTotal').textContent;
+                tableRows.push(new TableRow({
+                    children: [
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: '', size: 20, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            columnSpan: 5,
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: 'Grand Total:', bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                        }),
+                        new TableCell({
+                            children: [new Paragraph({ 
+                                children: [new TextRun({ text: grandTotal, bold: true, size: 22, rightToLeft: false })],
+                                alignment: AlignmentType.LEFT,
+                                bidirectional: false
+                            })],
+                            columnSpan: 2,
+                        }),
+                    ],
+                }));
+
+                const table = new Table({
+                    rows: tableRows,
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                });
+
+                children.push(table);
+
+                const doc = new Document({
+                    sections: [{
+                        properties: {
+                            page: {
+                                margin: { top: 720, right: 720, bottom: 720, left: 720 },
+                                size: { orientation: 'landscape' },
+                            },
+                            bidi: false,
+                        },
+                        children: children,
+                    }],
+                });
+
+                const blob = await Packer.toBlob(doc);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${trainingTitle.replace(/[^a-z0-9]/gi, '_')}.docx`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert('DOCX exported successfully!');
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting DOCX: ' + error.message);
+            }
+        }
+</script>
+<!-- ===== ExcelJS Library ===== -->
+<script src="./exceljs.min.js"></script>
+
+<!-- ===== Application JavaScript ===== -->
+<script>
+
+/* ===== Status Message ===== */
+function showStatus(message, duration = 2500) {
+  const el = document.getElementById('statusMessage');
+  if (!el) return;
+
+  el.textContent = message;
+  el.style.display = 'block';
+
+  setTimeout(() => {
+    el.style.display = 'none';
+  }, duration);
+}
+
+/* ===== XLSX Export (Final – Clean & Structured) ===== */
+async function exportToExcelXLSX() {
+  try {
+    if (typeof ExcelJS === 'undefined') {
+      alert('ExcelJS library is not loaded.');
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Training Resources');
+
+    /* ===== Read Header Inputs ===== */
+const orgName =
+  document.getElementById('organizationName')?.value ||
+  document.getElementById('organization')?.value ||
+  document.getElementById('orgName')?.value ||
+  '';
+    const trainingTitle =
+      document.getElementById('trainingTitle')?.value || '';
+    const preparedBy =
+      document.getElementById('preparedBy')?.value || '';
+    const trainingDate =
+      document.getElementById('trainingDate')?.value ||
+      new Date().toLocaleDateString('en-US');
+
+    /* ===== Header Section (Fixed Top) ===== */
+    worksheet.addRow(['Training Resource Management Tool']);
+    worksheet.addRow([`Organization Name: ${orgName}`]);
+    worksheet.addRow([`Training Title: ${trainingTitle}`]);
+    worksheet.addRow([`Prepared By: ${preparedBy}`]);
+    worksheet.addRow([`Date: ${trainingDate}`]);
+    worksheet.addRow([]); // spacer
+
+    // Styling header
+    worksheet.mergeCells('A1:G1');
+    worksheet.getRow(1).font = { bold: true, size: 14 };
+    worksheet.getRow(1).alignment = { horizontal: 'center' };
+
+    for (let r = 2; r <= 5; r++) {
+      worksheet.mergeCells(`A${r}:G${r}`);
+      worksheet.getRow(r).font = { bold: true };
+    }
+
+    /* ===== Table Header Row ===== */
+    const headerRowIndex = worksheet.rowCount + 1;
+
+    worksheet.addRow([
+      'Item Name',
+      'Quantity',
+      'Unit',
+      'Specification',
+      'Unit Cost',
+      'Total Cost',
+      'Image'
+    ]);
+
+    worksheet.getRow(headerRowIndex).font = { bold: true };
+    worksheet.getRow(headerRowIndex).alignment = { horizontal: 'center' };
+
+    // Column widths
+    worksheet.columns = [
+      { width: 25 },
+      { width: 10 },
+      { width: 10 },
+      { width: 30 },
+      { width: 15 },
+      { width: 15 },
+      { width: 20 }
+    ];
+
+worksheet.views = [
+  { rightToLeft: false }
+];
+
+    /* ===== Data Rows ===== */
+    const rows = document.querySelectorAll('#tableBody tr');
+    let grandTotal = 0;
+
+    rows.forEach(row => {
+      const rowId = row.id.split('-')[1];
+      const previewDiv =
+        document.getElementById(`imagePreview-${rowId}`);
+      const rawImage = previewDiv?.dataset?.image || null;
+
+      const total =
+        Number(row.querySelector('.total-cost')?.value || 0);
+      grandTotal += total;
+
+      const excelRow = worksheet.addRow([
+        row.querySelector('.item-name')?.value || '',
+        Number(row.querySelector('.quantity')?.value || 0),
+        row.querySelector('.unit')?.value || '',
+        row.querySelector('.specification')?.value || '',
+        Number(row.querySelector('.unit-cost')?.value || 0),
+        total,
+        '' // image placeholder
+      ]);
+
+      excelRow.height = 80;
+
+      /* ===== Image Placement (Stable) ===== */
+      if (rawImage && typeof rawImage === 'string') {
+        let base64 = rawImage;
+        let ext = 'png';
+
+        const match = rawImage.match(
+          /^data:image\/(png|jpeg|jpg|webp);base64,(.*)$/i
+        );
+        if (match) {
+          ext = match[1] === 'jpg' ? 'jpeg' : match[1];
+          base64 = match[2];
+        }
+
+        if (base64.length > 50) {
+          const imageId = workbook.addImage({
+            base64,
+            extension: ext
+          });
+
+          worksheet.addImage(imageId, {
+            tl: { col: 6, row: excelRow.number - 1 },
+            ext: { width: 90, height: 90 }
+          });
+        }
+      }
+    });
+
+    /* ===== Grand Total (Bottom) ===== */
+    worksheet.addRow([]);
+    const totalRow = worksheet.addRow([
+      '', '', '', '', 'Grand Total:', grandTotal
+    ]);
+
+    worksheet.mergeCells(
+      `A${totalRow.number}:E${totalRow.number}`
+    );
+    totalRow.font = { bold: true };
+    totalRow.getCell(6).numFmt = '#,##0.00';
+
+    /* ===== Export File ===== */
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob(
+      [buffer],
+      {
+        type:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+    );
+
+    const fileName =
+      trainingTitle.replace(/[^a-z0-9]/gi, '_') ||
+      'training_resources';
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showStatus('Excel (XLSX) exported successfully ✔');
+  } catch (error) {
+    console.error('XLSX Export Error:', error);
+    alert('Error exporting Excel file.');
+  }
+}
+
+/* ===== ExcelJS Check ===== */
+console.log('ExcelJS loaded:', typeof ExcelJS !== 'undefined');
+
+
+</script>
+<!-- ===== Footer / Copyright & Disclaimer ===== -->
+<footer class="app-footer">
+  <div class="footer-content">
+    <div class="copyright">
+      © 2026 Training Resource Management Tool |
+      by Husham Jawad Kadhim |
+      Version 1.0 |
+      All Rights Reserved
+    </div>
+
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong><br>
+      Training Resource Management Tool is provided "as is" without warranty of any kind.<br>
+      The developer assumes no responsibility for any inaccuracies, errors, omissions, or inconsistencies
+      in the generated documents.<br>
+      Users and facilitating institutions are solely responsible for verifying, validating,
+      and making final decisions on all content before use.
+    </div>
+  </div>
+</footer>
+
+
+</body>
+</html>
