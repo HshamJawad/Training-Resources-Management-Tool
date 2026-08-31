@@ -6,6 +6,22 @@
     <title>Training Resources Manager</title>
     <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
     <style>
+        /* Cairo is a VARIABLE font: one file carries the whole weight
+           axis, so `font-weight: 100 900` declares the range instead of
+           registering a single weight. Without that range the browser
+           gets one static instance and synthesises bold by smearing the
+           glyphs — which on Arabic looks like a rendering fault rather
+           than a font choice. `font-display: swap` keeps the interface
+           readable in the fallback face while the file loads. */
+        @font-face {
+            font-family: 'Cairo';
+            src: url('fonts/Cairo.woff2') format('woff2-variations'),
+                 url('fonts/Cairo.woff2') format('woff2');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -17,6 +33,65 @@
             padding: 20px;
             background-color: #f5f5f5;
             direction: ltr;
+        }
+
+        /* ── Arabic mode ──────────────────────────────────────────
+           Driven by dir="rtl" on <html> rather than a class, so the
+           browser flips the whole layout — table column order, list
+           markers, scrollbar side — instead of this stylesheet having
+           to mirror each one by hand.
+
+           Arial stays in the stack behind Cairo: it ships everywhere
+           and has full Arabic coverage, so a failed font fetch (offline,
+           wrong path, GitHub Pages hiccup) degrades to readable Arabic
+           rather than to boxes. */
+        html[dir="rtl"] body,
+        html[dir="rtl"] input,
+        html[dir="rtl"] textarea,
+        html[dir="rtl"] button,
+        html[dir="rtl"] select {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+        }
+
+        html[dir="rtl"] body { direction: rtl; }
+
+        /* Numeric fields stay LTR in both languages. An amount typed
+           into an RTL input has its minus sign and decimal point pushed
+           to the wrong end, which silently changes what the reader
+           thinks the number is. */
+        input[type="number"],
+        input[type="date"] {
+            direction: ltr;
+            text-align: start;
+        }
+
+        html[dir="rtl"] th,
+        html[dir="rtl"] td,
+        html[dir="rtl"] label { text-align: right; }
+
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            inset-inline-end: 24px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .lang-switch button {
+            padding: 5px 12px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .lang-switch button.active {
+            background: #6f42c1;
+            border-color: #6f42c1;
+            color: #fff;
         }
 
         .container {
@@ -284,27 +359,31 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Training Resources Management Tool</h1>
+    <div class="container" style="position: relative;">
+        <div class="lang-switch">
+            <button type="button" id="btnLangEn" onclick="setLang('en')">EN</button>
+            <button type="button" id="btnLangAr" onclick="setLang('ar')">ع</button>
+        </div>
+        <h1 data-i18n="appTitle">Training Resources Management Tool</h1>
         
         <div class="header-section">
             <div>
                 <div class="form-group">
-                    <label>Organization Name:</label>
-                    <input type="text" id="orgName" placeholder="Enter organization name">
+                    <label data-i18n="lblOrg">Organization Name:</label>
+                    <input type="text" id="orgName" placeholder="Enter organization name" data-i18n-ph="phOrg">
                 </div>
                 <div class="form-group">
-                    <label>Training Title:</label>
-                    <input type="text" id="trainingTitle" placeholder="Enter training title">
+                    <label data-i18n="lblTitle">Training Title:</label>
+                    <input type="text" id="trainingTitle" placeholder="Enter training title" data-i18n-ph="phTitle">
                 </div>
             </div>
             <div>
                 <div class="form-group">
-                    <label>Prepared By:</label>
-                    <input type="text" id="preparedBy" placeholder="Enter your name">
+                    <label data-i18n="lblBy">Prepared By:</label>
+                    <input type="text" id="preparedBy" placeholder="Enter your name" data-i18n-ph="phBy">
                 </div>
                 <div class="form-group">
-                    <label>Date:</label>
+                    <label data-i18n="lblDate">Date:</label>
                     <input type="date" id="prepDate">
                 </div>
             </div>
@@ -314,14 +393,14 @@
             <table id="resourcesTable">
                 <thead>
                     <tr>
-                        <th>Item Name</th>
-                        <th>Quantity</th>
-                        <th>Unit</th>
-                        <th>Specification</th>
-                        <th>Unit Cost</th>
-                        <th>Total Cost</th>
-                        <th>Image</th>
-                        <th>Delete</th>
+                        <th data-i18n="colItem">Item Name</th>
+                        <th data-i18n="colQty">Quantity</th>
+                        <th data-i18n="colUnit">Unit</th>
+                        <th data-i18n="colSpec">Specification</th>
+                        <th data-i18n="colUnitCost">Unit Cost</th>
+                        <th data-i18n="colTotal">Total Cost</th>
+                        <th data-i18n="colImage">Image</th>
+                        <th data-i18n="colDelete">Delete</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -330,15 +409,15 @@
         </div>
 
         <div class="total-section">
-            Grand Total: <span id="grandTotal">0.00</span>
+            <span data-i18n="grandTotal">Grand Total:</span> <span id="grandTotal">0.00</span>
         </div>
 
         <div class="button-group">
-            <button class="btn btn-primary" onclick="addRow()">➕ Add Row</button>
-            <button class="btn btn-secondary" onclick="saveToJSON()">💾 Save JSON</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('loadJSON').click()">📂 Load JSON</button>
-            <button class="btn btn-warning" onclick="exportToDOCX()">📄 Export DOCX</button>
-           <button class="btn btn-success" onclick="exportToExcelXLSX()">📊 Export Excel </button>
+            <button class="btn btn-primary" onclick="addRow()">➕ <span data-i18n="btnAddRow">Add Row</span></button>
+            <button class="btn btn-secondary" onclick="saveToJSON()">💾 <span data-i18n="btnSave">Save JSON</span></button>
+            <button class="btn btn-secondary" onclick="document.getElementById('loadJSON').click()">📂 <span data-i18n="btnLoad">Load JSON</span></button>
+            <button class="btn btn-warning" onclick="exportToDOCX()">📄 <span data-i18n="btnDocx">Export DOCX</span></button>
+           <button class="btn btn-success" onclick="exportToExcelXLSX()">📊 <span data-i18n="btnExcel">Export Excel</span></button>
 
        </div>
 
@@ -346,9 +425,139 @@
     </div>
 
     <script>
+        /* ── Language ────────────────────────────────────────────────
+           A dictionary and a DOM sweep, not a framework: this tool is a
+           single file with roughly thirty strings, and a build step would
+           cost more than it saves.
+
+           Keys are marked in the markup three ways:
+             data-i18n      → textContent
+             data-i18n-ph   → placeholder attribute
+           and rows built in JS call _t() directly at construction time.
+
+           Rows already on screen keep the placeholders they were built
+           with, so setLang() re-runs the sweep over them too. */
+        const I18N = {
+            en: {
+                appTitle:    'Training Resources Management Tool',
+                lblOrg:      'Organization Name:',
+                phOrg:       'Enter organization name',
+                lblTitle:    'Training Title:',
+                phTitle:     'Enter training title',
+                lblBy:       'Prepared By:',
+                phBy:        'Enter your name',
+                lblDate:     'Date:',
+                colItem:     'Item Name',
+                colQty:      'Quantity',
+                colUnit:     'Unit',
+                colSpec:     'Specification',
+                colUnitCost: 'Unit Cost',
+                colTotal:    'Total Cost',
+                colImage:    'Image',
+                colDelete:   'Delete',
+                phItem:      'Item name',
+                phUnit:      'e.g., pcs, kg',
+                phSpec:      'Enter specifications',
+                noImage:     'No image',
+                btnAddImage: 'Add Image',
+                grandTotal:  'Grand Total:',
+                btnAddRow:   'Add Row',
+                btnSave:     'Save JSON',
+                btnLoad:     'Load JSON',
+                btnDocx:     'Export DOCX',
+                btnExcel:    'Export Excel',
+                xlSheet:     'Training Resources',
+                xlHeading:   'Training Resource Management Tool',
+                xlOrg:       'Organization Name',
+                xlTitle:     'Training Title',
+                xlBy:        'Prepared By',
+                xlDate:      'Date',
+                xlFallbackName: 'training_resources',
+            },
+            ar: {
+                appTitle:    'أداة إدارة الموارد التدريبية',
+                lblOrg:      'اسم الجهة:',
+                phOrg:       'أدخل اسم الجهة',
+                lblTitle:    'عنوان التدريب:',
+                phTitle:     'أدخل عنوان التدريب',
+                lblBy:       'إعداد:',
+                phBy:        'أدخل اسمك',
+                lblDate:     'التاريخ:',
+                colItem:     'اسم الصنف',
+                colQty:      'الكمية',
+                colUnit:     'الوحدة',
+                colSpec:     'المواصفات',
+                colUnitCost: 'سعر الوحدة',
+                colTotal:    'التكلفة الإجمالية',
+                colImage:    'الصورة',
+                colDelete:   'حذف',
+                phItem:      'اسم الصنف',
+                phUnit:      'مثال: قطعة، كغم',
+                phSpec:      'أدخل المواصفات',
+                noImage:     'لا توجد صورة',
+                btnAddImage: 'إضافة صورة',
+                grandTotal:  'المجموع الكلي:',
+                btnAddRow:   'إضافة صف',
+                btnSave:     'حفظ JSON',
+                btnLoad:     'فتح JSON',
+                btnDocx:     'تصدير DOCX',
+                btnExcel:    'تصدير Excel',
+                xlSheet:     'الموارد التدريبية',
+                xlHeading:   'أداة إدارة الموارد التدريبية',
+                xlOrg:       'اسم الجهة',
+                xlTitle:     'عنوان التدريب',
+                xlBy:        'إعداد',
+                xlDate:      'التاريخ',
+                xlFallbackName: 'الموارد_التدريبية',
+            },
+        };
+
+        let LANG = 'en';
+        const _t = (k) => (I18N[LANG] && I18N[LANG][k] !== undefined) ? I18N[LANG][k] : k;
+        const _isRTL = () => LANG === 'ar';
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = _t(el.getAttribute('data-i18n'));
+            });
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                el.placeholder = _t(el.getAttribute('data-i18n-ph'));
+            });
+            /* Rows are built from a template string, so their placeholders
+               carry no data-i18n attribute to sweep. Re-set them by class. */
+            const byClass = [
+                ['.item-name', 'phItem'],
+                ['.unit', 'phUnit'],
+                ['.specification', 'phSpec'],
+            ];
+            byClass.forEach(([sel, key]) => {
+                document.querySelectorAll(sel).forEach(el => { el.placeholder = _t(key); });
+            });
+            document.querySelectorAll('.image-placeholder').forEach(el => {
+                el.textContent = _t('noImage');
+            });
+            document.querySelectorAll('.btn-add-image').forEach(el => {
+                el.textContent = '📷 ' + _t('btnAddImage');
+            });
+        }
+
+        function setLang(lang) {
+            LANG = (lang === 'ar') ? 'ar' : 'en';
+            const html = document.documentElement;
+            html.setAttribute('lang', LANG);
+            html.setAttribute('dir', _isRTL() ? 'rtl' : 'ltr');
+            document.getElementById('btnLangEn').classList.toggle('active', LANG === 'en');
+            document.getElementById('btnLangAr').classList.toggle('active', LANG === 'ar');
+            applyTranslations();
+            try { localStorage.setItem('trm_lang', LANG); } catch (e) { /* private mode */ }
+        }
+
         let rowCounter = 0;
 
         document.addEventListener('DOMContentLoaded', function() {
+            let saved = 'en';
+            try { saved = localStorage.getItem('trm_lang') || 'en'; } catch (e) { /* private mode */ }
+            setLang(saved);
             addRow();
             document.getElementById('prepDate').valueAsDate = new Date();
         });
@@ -360,15 +569,15 @@
             row.id = `row-${rowCounter}`;
             
             row.innerHTML = `
-                <td><input type="text" class="item-name" placeholder="Item name"></td>
+                <td><input type="text" class="item-name" placeholder="${_t('phItem')}"></td>
                 <td><input type="number" class="quantity" min="0" value="1" onchange="calculateRow(this)"></td>
-                <td><input type="text" class="unit" placeholder="e.g., pcs, kg"></td>
-                <td><textarea class="specification" placeholder="Enter specifications"></textarea></td>
+                <td><input type="text" class="unit" placeholder="${_t('phUnit')}"></td>
+                <td><textarea class="specification" placeholder="${_t('phSpec')}"></textarea></td>
                 <td><input type="number" class="unit-cost" min="0" step="0.01" value="0" onchange="calculateRow(this)"></td>
                 <td><input type="number" class="total-cost" readonly value="0"></td>
                 <td class="image-cell">
-                    <div class="image-placeholder" id="placeholder-${rowCounter}">No image</div>
-                    <button class="btn-add-image" onclick="selectImage(${rowCounter})">📷 Add Image</button>
+                    <div class="image-placeholder" id="placeholder-${rowCounter}">${_t('noImage')}</div>
+                    <button class="btn-add-image" onclick="selectImage(${rowCounter})">📷 ${_t('btnAddImage')}</button>
                     <input type="file" id="imageInput-${rowCounter}" class="hidden" accept="image/*" onchange="handleImageUpload(event, ${rowCounter})">
                     <div id="imagePreview-${rowCounter}" class="hidden"></div>
                     <button id="removeBtn-${rowCounter}" class="btn-remove-image hidden" onclick="removeImage(${rowCounter})">🗑️</button>
@@ -861,7 +1070,17 @@ async function exportToExcelXLSX() {
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Training Resources');
+    const worksheet = workbook.addWorksheet(_t('xlSheet'));
+
+    /* Arial, not Cairo, and deliberately so. A workbook cannot EMBED a
+       font — it only names one, and the reader's machine has to have it.
+       Cairo is a web font shipped with this tool; Arial ships with Excel
+       everywhere and carries full Arabic coverage. Naming Cairo would
+       give a correct file that renders in whatever Excel substitutes,
+       which on a bare Windows install is a fallback with no Arabic.
+       The UI uses Cairo because there the file is guaranteed present. */
+    const XL_FONT = _isRTL() ? 'Arial' : 'Calibri';
+    const _f = (extra) => Object.assign({ name: XL_FONT }, extra || {});
 
     /* ===== Read Header Inputs ===== */
 const orgName =
@@ -878,38 +1097,50 @@ const orgName =
       new Date().toLocaleDateString('en-US');
 
     /* ===== Header Section (Fixed Top) ===== */
-    worksheet.addRow(['Training Resource Management Tool']);
-    worksheet.addRow([`Organization Name: ${orgName}`]);
-    worksheet.addRow([`Training Title: ${trainingTitle}`]);
-    worksheet.addRow([`Prepared By: ${preparedBy}`]);
-    worksheet.addRow([`Date: ${trainingDate}`]);
+    worksheet.addRow([_t('xlHeading')]);
+    worksheet.addRow([`${_t('xlOrg')}: ${orgName}`]);
+    worksheet.addRow([`${_t('xlTitle')}: ${trainingTitle}`]);
+    worksheet.addRow([`${_t('xlBy')}: ${preparedBy}`]);
+    worksheet.addRow([`${_t('xlDate')}: ${trainingDate}`]);
     worksheet.addRow([]); // spacer
 
     // Styling header
     worksheet.mergeCells('A1:G1');
-    worksheet.getRow(1).font = { bold: true, size: 14 };
+    worksheet.getRow(1).font = _f({ bold: true, size: 14 });
     worksheet.getRow(1).alignment = { horizontal: 'center' };
 
+    /* `readingOrder` is per-CELL and separate from the sheet-level
+       rightToLeft below: the sheet setting flips which edge column A
+       sits on, the cell setting decides where the text inside a cell
+       starts. Set only one and a label like "الجهة: Ministry" ends up
+       with its colon on the wrong side. */
     for (let r = 2; r <= 5; r++) {
       worksheet.mergeCells(`A${r}:G${r}`);
-      worksheet.getRow(r).font = { bold: true };
+      worksheet.getRow(r).font = _f({ bold: true });
+      worksheet.getRow(r).alignment = {
+        horizontal: _isRTL() ? 'right' : 'left',
+        readingOrder: _isRTL() ? 'rtl' : 'ltr',
+      };
     }
 
     /* ===== Table Header Row ===== */
     const headerRowIndex = worksheet.rowCount + 1;
 
     worksheet.addRow([
-      'Item Name',
-      'Quantity',
-      'Unit',
-      'Specification',
-      'Unit Cost',
-      'Total Cost',
-      'Image'
+      _t('colItem'),
+      _t('colQty'),
+      _t('colUnit'),
+      _t('colSpec'),
+      _t('colUnitCost'),
+      _t('colTotal'),
+      _t('colImage')
     ]);
 
-    worksheet.getRow(headerRowIndex).font = { bold: true };
-    worksheet.getRow(headerRowIndex).alignment = { horizontal: 'center' };
+    worksheet.getRow(headerRowIndex).font = _f({ bold: true });
+    worksheet.getRow(headerRowIndex).alignment = {
+      horizontal: 'center',
+      readingOrder: _isRTL() ? 'rtl' : 'ltr',
+    };
 
     // Column widths
     worksheet.columns = [
@@ -922,9 +1153,13 @@ const orgName =
       { width: 20 }
     ];
 
-worksheet.views = [
-  { rightToLeft: false }
-];
+    /* Sheet-level mirroring: column A moves to the right edge and the
+       whole grid reads right-to-left, which is what an Arabic reader
+       expects from a workbook rather than a left-anchored grid holding
+       Arabic text. */
+    worksheet.views = [
+      { rightToLeft: _isRTL() }
+    ];
 
     /* ===== Data Rows ===== */
     const rows = document.querySelectorAll('#tableBody tr');
@@ -951,6 +1186,27 @@ worksheet.views = [
       ]);
 
       excelRow.height = 80;
+      excelRow.font = _f();
+      /* Text columns follow the language; the three numeric columns stay
+         LTR whatever the language, because a quantity or a price with
+         its decimal separator mirrored is a different number to the eye. */
+      [1, 3, 4].forEach(c => {
+        excelRow.getCell(c).alignment = {
+          vertical: 'middle',
+          horizontal: _isRTL() ? 'right' : 'left',
+          wrapText: true,
+          readingOrder: _isRTL() ? 'rtl' : 'ltr',
+        };
+      });
+      [2, 5, 6].forEach(c => {
+        excelRow.getCell(c).alignment = {
+          vertical: 'middle',
+          horizontal: 'center',
+          readingOrder: 'ltr',
+        };
+      });
+      excelRow.getCell(5).numFmt = '#,##0.00';
+      excelRow.getCell(6).numFmt = '#,##0.00';
 
       /* ===== Image Placement (Stable) ===== */
       if (rawImage && typeof rawImage === 'string') {
@@ -982,14 +1238,19 @@ worksheet.views = [
     /* ===== Grand Total (Bottom) ===== */
     worksheet.addRow([]);
     const totalRow = worksheet.addRow([
-      '', '', '', '', 'Grand Total:', grandTotal
+      '', '', '', '', _t('grandTotal'), grandTotal
     ]);
 
     worksheet.mergeCells(
       `A${totalRow.number}:E${totalRow.number}`
     );
-    totalRow.font = { bold: true };
+    totalRow.font = _f({ bold: true });
+    totalRow.getCell(1).alignment = {
+      horizontal: _isRTL() ? 'right' : 'left',
+      readingOrder: _isRTL() ? 'rtl' : 'ltr',
+    };
     totalRow.getCell(6).numFmt = '#,##0.00';
+    totalRow.getCell(6).alignment = { horizontal: 'center', readingOrder: 'ltr' };
 
     /* ===== Export File ===== */
     const buffer = await workbook.xlsx.writeBuffer();
@@ -1001,9 +1262,17 @@ worksheet.views = [
       }
     );
 
+    /* /[^a-z0-9]/gi turns an Arabic title into a row of underscores, so
+       every Arabic export arrived named "______". Keep Unicode letters
+       and digits and strip only what a filesystem actually objects to. */
     const fileName =
-      trainingTitle.replace(/[^a-z0-9]/gi, '_') ||
-      'training_resources';
+      String(trainingTitle || '')
+        .replace(/[\\/:*?"<>|\u0000-\u001F]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '')
+        .slice(0, 80) ||
+      _t('xlFallbackName');
 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
