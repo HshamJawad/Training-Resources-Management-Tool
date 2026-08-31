@@ -322,13 +322,58 @@
 }
 /* ===== Footer ===== */
 .app-footer {
-  margin-top: 40px;
-  padding: 14px 18px;
+  /* Was 40px top / 14px vertical padding. The disclaimer now collapses,
+     so the footer's resting height is a single line and the old spacing
+     left the page ending in dead white. */
+  margin-top: 20px;
+  padding: 8px 18px 6px;
   background: #f5f5f5;
   border-top: 1px solid #ddd;
   font-size: 13px;
   color: #444;
-   text-align: center;
+  text-align: center;
+}
+
+/* <details>/<summary> rather than a button and a class toggle: the
+   open/closed state, keyboard access and the disclosure arrow are all
+   native, and the text stays in the DOM for search and printing even
+   while collapsed. */
+.app-footer details.disclaimer-box {
+  margin-top: 4px;
+}
+
+.app-footer details.disclaimer-box > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #555;
+  user-select: none;
+}
+
+.app-footer details.disclaimer-box > summary::-webkit-details-marker { display: none; }
+
+.app-footer details.disclaimer-box > summary::after {
+  content: '\25B8';                     /* small right-pointing triangle */
+  font-size: 11px;
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+/* The arrow points along the reading direction, so under RTL it has to
+   start mirrored or it points away from the text it belongs to. */
+html[dir="rtl"] .app-footer details.disclaimer-box > summary::after {
+  transform: rotate(180deg);
+}
+
+.app-footer details.disclaimer-box[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+html[dir="rtl"] .app-footer details.disclaimer-box[open] > summary::after {
+  transform: rotate(90deg);
 }
 
 .footer-content {
@@ -373,8 +418,16 @@
                     <input type="text" id="orgName" placeholder="Enter organization name" data-i18n-ph="phOrg">
                 </div>
                 <div class="form-group">
-                    <label data-i18n="lblTitle">Training Title:</label>
-                    <input type="text" id="trainingTitle" placeholder="Enter training title" data-i18n-ph="phTitle">
+                    <label data-i18n="lblTitle">Workshop / Specialization:</label>
+                    <input type="text" id="trainingTitle" placeholder="Enter workshop or specialization" data-i18n-ph="phTitle">
+                </div>
+                <!-- Placed directly under the workshop field, not next to
+                     the cost column: the currency applies to the whole
+                     sheet, so it belongs with the document's identity
+                     rather than with any one row. -->
+                <div class="form-group">
+                    <label data-i18n="lblCurrency">Currency:</label>
+                    <select id="currency" onchange="onCurrencyChange()"></select>
                 </div>
             </div>
             <div>
@@ -442,8 +495,9 @@
                 appTitle:    'Training Resources Management Tool',
                 lblOrg:      'Organization Name:',
                 phOrg:       'Enter organization name',
-                lblTitle:    'Training Title:',
-                phTitle:     'Enter training title',
+                lblTitle:    'Workshop / Specialization:',
+                phTitle:     'Enter workshop or specialization',
+                lblCurrency: 'Currency:',
                 lblBy:       'Prepared By:',
                 phBy:        'Enter your name',
                 lblDate:     'Date:',
@@ -469,17 +523,29 @@
                 xlSheet:     'Training Resources',
                 xlHeading:   'Training Resource Management Tool',
                 xlOrg:       'Organization Name',
-                xlTitle:     'Training Title',
+                xlTitle:     'Workshop / Specialization',
                 xlBy:        'Prepared By',
                 xlDate:      'Date',
                 xlFallbackName: 'training_resources',
+                ftDisclaimerLabel: 'Disclaimer',
+                ftCopyright: '\u00A9 2026 Training Resource Management Tool | by Husham Jawad Kadhim | Version 2026 | All Rights Reserved',
+                ftDisclaimerBody: 'Training Resource Management Tool is provided "as is" without warranty of any kind. The developer assumes no responsibility for any inaccuracies, errors, omissions, or inconsistencies in the generated documents. Users and facilitating institutions are solely responsible for verifying, validating, and making final decisions on all content before use.',
+                docPreparedBy: 'Prepared By',
+                docDate: 'Date',
+                docNoImage: 'No image',
+                docGrandTotal: 'Grand Total',
+                msgDocxOk: 'DOCX exported successfully.',
+                msgDocxLoading: 'Document library is still loading. Please wait and try again.',
+                msgDocxError: 'Error exporting DOCX: ',
+                docFallbackName: 'training_resources',
             },
             ar: {
                 appTitle:    'أداة إدارة الموارد التدريبية',
                 lblOrg:      'اسم الجهة:',
                 phOrg:       'أدخل اسم الجهة',
-                lblTitle:    'عنوان التدريب:',
-                phTitle:     'أدخل عنوان التدريب',
+                lblTitle:    'الورشة التدريبية / الاختصاص:',
+                phTitle:     'أدخل الورشة التدريبية أو الاختصاص',
+                lblCurrency: 'العملة:',
                 lblBy:       'إعداد:',
                 phBy:        'أدخل اسمك',
                 lblDate:     'التاريخ:',
@@ -505,10 +571,21 @@
                 xlSheet:     'الموارد التدريبية',
                 xlHeading:   'أداة إدارة الموارد التدريبية',
                 xlOrg:       'اسم الجهة',
-                xlTitle:     'عنوان التدريب',
+                xlTitle:     'الورشة التدريبية / الاختصاص',
                 xlBy:        'إعداد',
                 xlDate:      'التاريخ',
                 xlFallbackName: 'الموارد_التدريبية',
+                ftDisclaimerLabel: 'إخلاء المسؤولية',
+                ftCopyright: '\u00A9 2026 أداة إدارة الموارد التدريبية | إعداد هشام جواد كاظم | إصدار 2026 | جميع الحقوق محفوظة',
+                ftDisclaimerBody: 'تُقدَّم أداة إدارة الموارد التدريبية كما هي دون أي ضمان من أي نوع. ولا يتحمّل المطوّر أي مسؤولية عن أي عدم دقة أو أخطاء أو إغفال أو تعارض في المستندات المُولَّدة. ويتحمّل المستخدمون والجهات المنفّذة وحدهم مسؤولية التحقق من كل المحتوى واعتماده واتخاذ القرار النهائي بشأنه قبل الاستخدام.',
+                docPreparedBy: 'إعداد',
+                docDate: 'التاريخ',
+                docNoImage: 'لا توجد صورة',
+                docGrandTotal: 'المجموع الكلي',
+                msgDocxOk: 'تم تصدير ملف DOCX بنجاح.',
+                msgDocxLoading: 'مكتبة المستندات قيد التحميل. يرجى الانتظار والمحاولة مجدداً.',
+                msgDocxError: 'تعذّر تصدير DOCX: ',
+                docFallbackName: 'الموارد_التدريبية',
             },
         };
 
@@ -539,6 +616,11 @@
             document.querySelectorAll('.btn-add-image').forEach(el => {
                 el.textContent = '📷 ' + _t('btnAddImage');
             });
+            /* Rebuilt rather than relabelled: the option text is composed
+               from the localised currency name, so it changes with the
+               language while the selected code stays put. */
+            if (typeof buildCurrencyOptions === 'function') buildCurrencyOptions();
+            if (typeof updateCostHeaders === 'function') updateCostHeaders();
         }
 
         function setLang(lang) {
@@ -552,11 +634,101 @@
             try { localStorage.setItem('trm_lang', LANG); } catch (e) { /* private mode */ }
         }
 
+
+        /* ── Currency ────────────────────────────────────────────────
+           One selection for the whole document, stored as a code plus a
+           symbol. The code is what goes into the exported files: "IQD
+           1,250.50" is unambiguous in a procurement document in a way a
+           bare symbol is not, and several of these currencies share the
+           symbol د.إ or £ with their neighbours.
+
+           Names are localised because a facilitator reading an Arabic
+           interface should not have to recognise "Iraqi Dinar" in Latin
+           script to pick their own currency. */
+        const CURRENCIES = [
+            { code: 'IQD', symbol: '\u062f.\u0639', en: 'Iraqi Dinar',          ar: '\u062f\u064a\u0646\u0627\u0631 \u0639\u0631\u0627\u0642\u064a' },
+            { code: 'USD', symbol: '$',   en: 'US Dollar',            ar: '\u062f\u0648\u0644\u0627\u0631 \u0623\u0645\u0631\u064a\u0643\u064a' },
+            { code: 'EUR', symbol: '\u20AC',   en: 'Euro',                  ar: '\u064a\u0648\u0631\u0648' },
+            { code: 'GBP', symbol: '\u00A3',   en: 'British Pound',         ar: '\u062c\u0646\u064a\u0647 \u0625\u0633\u062a\u0631\u0644\u064a\u0646\u064a' },
+            { code: 'SAR', symbol: '\u0631.\u0633', en: 'Saudi Riyal',           ar: '\u0631\u064a\u0627\u0644 \u0633\u0639\u0648\u062f\u064a' },
+            { code: 'AED', symbol: '\u062f.\u0625', en: 'UAE Dirham',            ar: '\u062f\u0631\u0647\u0645 \u0625\u0645\u0627\u0631\u0627\u062a\u064a' },
+            { code: 'KWD', symbol: '\u062f.\u0643', en: 'Kuwaiti Dinar',         ar: '\u062f\u064a\u0646\u0627\u0631 \u0643\u0648\u064a\u062a\u064a' },
+            { code: 'QAR', symbol: '\u0631.\u0642', en: 'Qatari Riyal',          ar: '\u0631\u064a\u0627\u0644 \u0642\u0637\u0631\u064a' },
+            { code: 'BHD', symbol: '.\u062f.\u0628', en: 'Bahraini Dinar',       ar: '\u062f\u064a\u0646\u0627\u0631 \u0628\u062d\u0631\u064a\u0646\u064a' },
+            { code: 'OMR', symbol: '\u0631.\u0639', en: 'Omani Rial',            ar: '\u0631\u064a\u0627\u0644 \u0639\u0645\u0627\u0646\u064a' },
+            { code: 'JOD', symbol: '\u062f.\u0627', en: 'Jordanian Dinar',       ar: '\u062f\u064a\u0646\u0627\u0631 \u0623\u0631\u062f\u0646\u064a' },
+            { code: 'EGP', symbol: '\u062c.\u0645', en: 'Egyptian Pound',        ar: '\u062c\u0646\u064a\u0647 \u0645\u0635\u0631\u064a' },
+            { code: 'LBP', symbol: '\u0644.\u0644', en: 'Lebanese Pound',        ar: '\u0644\u064a\u0631\u0629 \u0644\u0628\u0646\u0627\u0646\u064a\u0629' },
+            { code: 'SYP', symbol: '\u0644.\u0633', en: 'Syrian Pound',          ar: '\u0644\u064a\u0631\u0629 \u0633\u0648\u0631\u064a\u0629' },
+            { code: 'YER', symbol: '\u0631.\u064a', en: 'Yemeni Rial',           ar: '\u0631\u064a\u0627\u0644 \u064a\u0645\u0646\u064a' },
+            { code: 'MAD', symbol: '\u062f.\u0645', en: 'Moroccan Dirham',       ar: '\u062f\u0631\u0647\u0645 \u0645\u063a\u0631\u0628\u064a' },
+            { code: 'DZD', symbol: '\u062f.\u062c', en: 'Algerian Dinar',        ar: '\u062f\u064a\u0646\u0627\u0631 \u062c\u0632\u0627\u0626\u0631\u064a' },
+            { code: 'TND', symbol: '\u062f.\u062a', en: 'Tunisian Dinar',        ar: '\u062f\u064a\u0646\u0627\u0631 \u062a\u0648\u0646\u0633\u064a' },
+            { code: 'LYD', symbol: '\u062f.\u0644', en: 'Libyan Dinar',          ar: '\u062f\u064a\u0646\u0627\u0631 \u0644\u064a\u0628\u064a' },
+            { code: 'SDG', symbol: '\u062c.\u0633', en: 'Sudanese Pound',        ar: '\u062c\u0646\u064a\u0647 \u0633\u0648\u062f\u0627\u0646\u064a' },
+            { code: 'TRY', symbol: '\u20BA',   en: 'Turkish Lira',          ar: '\u0644\u064a\u0631\u0629 \u062a\u0631\u0643\u064a\u0629' },
+            { code: 'IRR', symbol: '\uFDFC',   en: 'Iranian Rial',          ar: '\u0631\u064a\u0627\u0644 \u0625\u064a\u0631\u0627\u0646\u064a' },
+            { code: 'JPY', symbol: '\u00A5',   en: 'Japanese Yen',          ar: '\u064a\u0646 \u064a\u0627\u0628\u0627\u0646\u064a' },
+            { code: 'CNY', symbol: '\u00A5',   en: 'Chinese Yuan',          ar: '\u064a\u0648\u0627\u0646 \u0635\u064a\u0646\u064a' },
+            { code: 'INR', symbol: '\u20B9',   en: 'Indian Rupee',          ar: '\u0631\u0648\u0628\u064a\u0629 \u0647\u0646\u062f\u064a\u0629' },
+            { code: 'CHF', symbol: 'CHF', en: 'Swiss Franc',          ar: '\u0641\u0631\u0646\u0643 \u0633\u0648\u064a\u0633\u0631\u064a' },
+            { code: 'CAD', symbol: 'C$',  en: 'Canadian Dollar',      ar: '\u062f\u0648\u0644\u0627\u0631 \u0643\u0646\u062f\u064a' },
+            { code: 'AUD', symbol: 'A$',  en: 'Australian Dollar',    ar: '\u062f\u0648\u0644\u0627\u0631 \u0623\u0633\u062a\u0631\u0627\u0644\u064a' },
+        ];
+
+        function getCurrency() {
+            const code = document.getElementById('currency')?.value || 'IQD';
+            return CURRENCIES.find(c => c.code === code) || CURRENCIES[0];
+        }
+
+        /* Exports print the CODE, not the symbol — see the note above. */
+        function currencyLabel() {
+            const c = getCurrency();
+            return c.code;
+        }
+
+        function buildCurrencyOptions() {
+            const sel = document.getElementById('currency');
+            if (!sel) return;
+            const keep = sel.value;
+            sel.innerHTML = '';
+            CURRENCIES.forEach(c => {
+                const o = document.createElement('option');
+                o.value = c.code;
+                o.textContent = `${c.code} \u2014 ${LANG === 'ar' ? c.ar : c.en} (${c.symbol})`;
+                sel.appendChild(o);
+            });
+            sel.value = keep || 'IQD';
+        }
+
+        function onCurrencyChange() {
+            try { localStorage.setItem('trm_currency', getCurrency().code); } catch (e) { /* private mode */ }
+            updateCostHeaders();
+        }
+
+        /* The two cost columns carry the currency in their heading rather
+           than repeating it in every cell — 40 rows of "IQD" is noise,
+           and the column header is where a reader looks for the unit. */
+        function updateCostHeaders() {
+            const code = currencyLabel();
+            const uc = document.querySelector('[data-i18n="colUnitCost"]');
+            const tc = document.querySelector('[data-i18n="colTotal"]');
+            /* En dash rather than parentheses, matching the exports:
+               brackets are mirrored characters under bidi and read
+               backwards inside an Arabic heading. */
+            if (uc) uc.textContent = `${_t('colUnitCost')} \u2013 ${code}`;
+            if (tc) tc.textContent = `${_t('colTotal')} \u2013 ${code}`;
+        }
+
         let rowCounter = 0;
 
         document.addEventListener('DOMContentLoaded', function() {
             let saved = 'en';
             try { saved = localStorage.getItem('trm_lang') || 'en'; } catch (e) { /* private mode */ }
+            let cur = 'IQD';
+            try { cur = localStorage.getItem('trm_currency') || 'IQD'; } catch (e) { /* private mode */ }
+            buildCurrencyOptions();
+            document.getElementById('currency').value = cur;
             setLang(saved);
             addRow();
             document.getElementById('prepDate').valueAsDate = new Date();
@@ -740,310 +912,13 @@
             reader.readAsText(file);
         }
 
-        async function exportToDOCX() {
-            if (typeof window.docx === 'undefined') {
-                alert('Document library is still loading. Please wait and try again.');
-                return;
-            }
-const orgName =
-  document.getElementById('organizationName')?.value ||
-  document.getElementById('organization')?.value ||
-  document.getElementById('orgName')?.value ||
-  '—';
-            const trainingTitle = document.getElementById('trainingTitle').value || 'Training Resources';
-            const preparedBy = document.getElementById('preparedBy').value;
-            const prepDate = document.getElementById('prepDate').value;
-
-            try {
-                const { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, ImageRun, Packer, BorderStyle } = window.docx;
-
-                const children = [];
-
-                children.push(new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: orgName,
-                            size: 32,
-                            bold: true,
-                            rightToLeft: false,
-                        }),
-                    ],
-                    alignment: AlignmentType.CENTER,
-                    bidirectional: false,
-                    spacing: { after: 200 },
-                }));
-
-                children.push(new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: trainingTitle,
-                            size: 28,
-                            bold: true,
-                            rightToLeft: false,
-                        }),
-                    ],
-                    alignment: AlignmentType.CENTER,
-                    bidirectional: false,
-                    spacing: { after: 400 },
-                }));
-
-                if (preparedBy) {
-                    children.push(new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: `Prepared By: ${preparedBy}`,
-                                size: 22,
-                                rightToLeft: false,
-                            }),
-                        ],
-                        alignment: AlignmentType.LEFT,
-                        bidirectional: false,
-                        spacing: { after: 100 },
-                    }));
-                }
-
-                if (prepDate) {
-                    children.push(new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: `Date: ${prepDate}`,
-                                size: 22,
-                                rightToLeft: false,
-                            }),
-                        ],
-                        alignment: AlignmentType.LEFT,
-                        bidirectional: false,
-                        spacing: { after: 300 },
-                    }));
-                }
-
-                const rows = document.querySelectorAll('#tableBody tr');
-                const tableRows = [];
-
-                tableRows.push(new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Item Name', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 2000, type: WidthType.DXA },
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Quantity', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 1000, type: WidthType.DXA },
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Unit', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 1000, type: WidthType.DXA },
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Specification', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 2500, type: WidthType.DXA },
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Unit Cost', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 1200, type: WidthType.DXA },
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Total Cost', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 1200, type: WidthType.DXA },
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Image', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            width: { size: 1500, type: WidthType.DXA },
-                        }),
-                    ],
-                }));
-
-                for (let row of rows) {
-                    const rowId = row.id.split('-')[1];
-                    const previewDiv = document.getElementById(`imagePreview-${rowId}`);
-                    const imageBase64 = previewDiv?.dataset.image;
-
-                    const itemName = row.querySelector('.item-name').value || '';
-                    const quantity = row.querySelector('.quantity').value || '';
-                    const unit = row.querySelector('.unit').value || '';
-                    const specification = row.querySelector('.specification').value || '';
-                    const unitCost = row.querySelector('.unit-cost').value || '';
-                    const totalCost = row.querySelector('.total-cost').value || '';
-
-                    let imageCellChildren = [new Paragraph({ 
-                        children: [new TextRun({ text: 'No image', size: 20, rightToLeft: false })],
-                        alignment: AlignmentType.LEFT,
-                        bidirectional: false
-                    })];
-
-                    if (imageBase64) {
-                        try {
-                            const base64Data = imageBase64.split(',')[1];
-                            imageCellChildren = [new Paragraph({
-                                children: [
-                                    new ImageRun({
-                                        data: Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)),
-                                        transformation: {
-                                            width: 113,
-                                            height: 113,
-                                        },
-                                    }),
-                                ],
-                                alignment: AlignmentType.CENTER,
-                                bidirectional: false,
-                            })];
-                        } catch (imgError) {
-                            console.error('Error processing image:', imgError);
-                        }
-                    }
-
-                    tableRows.push(new TableRow({
-                        children: [
-                            new TableCell({
-                                children: [new Paragraph({ 
-                                    children: [new TextRun({ text: itemName, size: 20, rightToLeft: false })],
-                                    alignment: AlignmentType.LEFT,
-                                    bidirectional: false
-                                })],
-                                width: { size: 2000, type: WidthType.DXA },
-                            }),
-                            new TableCell({
-                                children: [new Paragraph({ 
-                                    children: [new TextRun({ text: quantity, size: 20, rightToLeft: false })],
-                                    alignment: AlignmentType.LEFT,
-                                    bidirectional: false
-                                })],
-                                width: { size: 1000, type: WidthType.DXA },
-                            }),
-                            new TableCell({
-                                children: [new Paragraph({ 
-                                    children: [new TextRun({ text: unit, size: 20, rightToLeft: false })],
-                                    alignment: AlignmentType.LEFT,
-                                    bidirectional: false
-                                })],
-                                width: { size: 1000, type: WidthType.DXA },
-                            }),
-                            new TableCell({
-                                children: [new Paragraph({ 
-                                    children: [new TextRun({ text: specification, size: 20, rightToLeft: false })],
-                                    alignment: AlignmentType.LEFT,
-                                    bidirectional: false
-                                })],
-                                width: { size: 2500, type: WidthType.DXA },
-                            }),
-                            new TableCell({
-                                children: [new Paragraph({ 
-                                    children: [new TextRun({ text: unitCost, size: 20, rightToLeft: false })],
-                                    alignment: AlignmentType.LEFT,
-                                    bidirectional: false
-                                })],
-                                width: { size: 1200, type: WidthType.DXA },
-                            }),
-                            new TableCell({
-                                children: [new Paragraph({ 
-                                    children: [new TextRun({ text: totalCost, size: 20, rightToLeft: false })],
-                                    alignment: AlignmentType.LEFT,
-                                    bidirectional: false
-                                })],
-                                width: { size: 1200, type: WidthType.DXA },
-                            }),
-                            new TableCell({
-                                children: imageCellChildren,
-                                width: { size: 1500, type: WidthType.DXA },
-                            }),
-                        ],
-                    }));
-                }
-
-                const grandTotal = document.getElementById('grandTotal').textContent;
-                tableRows.push(new TableRow({
-                    children: [
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: '', size: 20, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            columnSpan: 5,
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: 'Grand Total:', bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                        }),
-                        new TableCell({
-                            children: [new Paragraph({ 
-                                children: [new TextRun({ text: grandTotal, bold: true, size: 22, rightToLeft: false })],
-                                alignment: AlignmentType.LEFT,
-                                bidirectional: false
-                            })],
-                            columnSpan: 2,
-                        }),
-                    ],
-                }));
-
-                const table = new Table({
-                    rows: tableRows,
-                    width: { size: 100, type: WidthType.PERCENTAGE },
-                });
-
-                children.push(table);
-
-                const doc = new Document({
-                    sections: [{
-                        properties: {
-                            page: {
-                                margin: { top: 720, right: 720, bottom: 720, left: 720 },
-                                size: { orientation: 'landscape' },
-                            },
-                            bidi: false,
-                        },
-                        children: children,
-                    }],
-                });
-
-                const blob = await Packer.toBlob(doc);
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${trainingTitle.replace(/[^a-z0-9]/gi, '_')}.docx`;
-                a.click();
-                URL.revokeObjectURL(url);
-
-                alert('DOCX exported successfully!');
-            } catch (error) {
-                console.error('Export error:', error);
-                alert('Error exporting DOCX: ' + error.message);
-            }
-        }
 </script>
 <!-- ===== ExcelJS Library ===== -->
 <script src="./exceljs.min.js"></script>
+
+<!-- Word export lives in its own file: it is the largest single piece
+     of logic in the tool and the one most likely to change. -->
+<script src="./exports_docx.js"></script>
 
 <!-- ===== Application JavaScript ===== -->
 <script>
@@ -1131,8 +1006,8 @@ const orgName =
       _t('colQty'),
       _t('colUnit'),
       _t('colSpec'),
-      _t('colUnitCost'),
-      _t('colTotal'),
+      _t('colUnitCost') + (currencyLabel() ? ' \u2013 ' + currencyLabel() : ''),
+      _t('colTotal') + (currencyLabel() ? ' \u2013 ' + currencyLabel() : ''),
       _t('colImage')
     ]);
 
@@ -1238,7 +1113,7 @@ const orgName =
     /* ===== Grand Total (Bottom) ===== */
     worksheet.addRow([]);
     const totalRow = worksheet.addRow([
-      '', '', '', '', _t('grandTotal'), grandTotal
+      '', '', '', '', _t('grandTotal') + (currencyLabel() ? ' \u2013 ' + currencyLabel() : ''), grandTotal
     ]);
 
     worksheet.mergeCells(
@@ -1298,21 +1173,16 @@ console.log('ExcelJS loaded:', typeof ExcelJS !== 'undefined');
 <!-- ===== Footer / Copyright & Disclaimer ===== -->
 <footer class="app-footer">
   <div class="footer-content">
-    <div class="copyright">
-      © 2026 Training Resource Management Tool |
-      by Husham Jawad Kadhim |
-      Version 1.0 |
-      All Rights Reserved
+    <div class="copyright" data-i18n="ftCopyright">
+      © 2026 Training Resource Management Tool | by Husham Jawad Kadhim | Version 2026 | All Rights Reserved
     </div>
 
-    <div class="disclaimer">
-      <strong>Disclaimer:</strong><br>
-      Training Resource Management Tool is provided "as is" without warranty of any kind.<br>
-      The developer assumes no responsibility for any inaccuracies, errors, omissions, or inconsistencies
-      in the generated documents.<br>
-      Users and facilitating institutions are solely responsible for verifying, validating,
-      and making final decisions on all content before use.
-    </div>
+    <details class="disclaimer-box">
+      <summary data-i18n="ftDisclaimerLabel">Disclaimer</summary>
+      <div class="disclaimer" data-i18n="ftDisclaimerBody">
+        Training Resource Management Tool is provided "as is" without warranty of any kind. The developer assumes no responsibility for any inaccuracies, errors, omissions, or inconsistencies in the generated documents. Users and facilitating institutions are solely responsible for verifying, validating, and making final decisions on all content before use.
+      </div>
+    </details>
   </div>
 </footer>
 
