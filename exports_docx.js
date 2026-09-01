@@ -62,6 +62,9 @@
   const COLS = [3100, 1350, 1200, 3600, 2100, 2100, 1948];
   const TABLE_W = COLS.reduce((a, b) => a + b, 0);
 
+  /* Falls back to alert() only if index.html has not defined notify()
+     — a half-loaded page should still be able to report a failure. */
+  const _say  = (msg, type) => (typeof notify === 'function' ? notify(msg, type) : alert(msg));
   const _rtl  = () => (typeof _isRTL === 'function' ? _isRTL() : false);
   const _tr   = (k) => (typeof _t === 'function' ? _t(k) : k);
   const _cur  = () => (typeof currencyLabel === 'function' ? currencyLabel() : '');
@@ -88,7 +91,7 @@
 
   async function exportToDOCX() {
     if (typeof window.docx === 'undefined') {
-      alert(_tr('msgDocxLoading'));
+      _say(_tr('msgDocxLoading'), 'error');
       return;
     }
 
@@ -286,12 +289,11 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      if (typeof showStatus === 'function') showStatus(_tr('msgDocxOk'));
-      else alert(_tr('msgDocxOk'));
+      _say(_tr('msgDocxOk'), 'success');
 
     } catch (error) {
       console.error('Export error:', error);
-      alert(_tr('msgDocxError') + error.message);
+      _say(_tr('msgDocxError') + error.message, 'error');
     }
   }
 
