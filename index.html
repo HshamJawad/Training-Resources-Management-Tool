@@ -275,10 +275,11 @@
             gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
-            padding: 10px 16px;
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            padding: 9px 16px;
+            background: rgba(250, 250, 251, 0.96);
+            backdrop-filter: saturate(180%) blur(8px);
+            border-bottom: 1px solid #e3e5e8;
+            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
         }
 
         /* The fixed bar is out of the flow, so nothing reserves space
@@ -286,23 +287,123 @@
            underneath it. Buttons wrap on narrow screens, hence the
            generous reserve rather than a value matched to one row. */
         body {
-            padding-top: 84px;
+            padding-top: 70px;
         }
 
         @media (max-width: 700px) {
-            body { padding-top: 120px; }
+            body { padding-top: 108px; }
             .button-group { gap: 6px; padding: 8px 10px; }
-            .btn { padding: 9px 14px; font-size: 13px; }
+            .btn { padding: 8px 13px; font-size: 13px; gap: 6px; }
+            .btn-addrow { font-size: 14px; }
         }
 
+        /* ── Toolbar buttons ─────────────────────────────────────
+           Neutral greys, not one colour per action. Five saturated
+           buttons side by side each shout equally loudly, which tells
+           the eye nothing about which one matters; a quiet toolbar lets
+           the SHEET be the coloured thing on the page. The one action
+           that is genuinely primary — Add Row — keeps its colour, and
+           now stands alone where it is used.
+
+           `border-radius: 999px` is a capsule at any height: it clamps
+           to half the box, so the pill survives a font-size change or a
+           wrapped label without turning into a lozenge. */
         .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border: 1px solid #d8dade;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #fdfdfe 0%, #f1f2f4 100%);
+            color: #3c4043;
             cursor: pointer;
             font-size: 14px;
-            font-weight: bold;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+            transition: background 0.15s ease, border-color 0.15s ease,
+                        box-shadow 0.15s ease, transform 0.05s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(180deg, #ffffff 0%, #e8eaed 100%);
+            border-color: #c3c6cb;
+            box-shadow: 0 2px 5px rgba(16, 24, 40, 0.09);
+        }
+
+        /* Pressed state moves the button 1px instead of only changing
+           colour, so a tap on a touch screen — where there is no hover —
+           still confirms it registered. */
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.12);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid #6f42c1;
+            outline-offset: 2px;
+        }
+
+        /* Icons inherit the label colour through currentColor, so they
+           never need a second rule when the button state changes.
+           `.cut` punches the folded-corner and label shapes back out of
+           the filled body; `.stroke` is for lines that must stay lines. */
+        .btn-ico {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+            fill: currentColor;
+        }
+
+        .btn-ico .cut {
+            fill: #f1f2f4;
+            stroke: currentColor;
+            stroke-width: 1.1;
+        }
+
+        .btn-ico .stroke {
+            fill: none;
+            stroke: #f1f2f4;
+            stroke-width: 1.3;
+            stroke-linecap: round;
+        }
+
+        .btn:hover .btn-ico .cut { fill: #e8eaed; }
+        .btn:hover .btn-ico .stroke { stroke: #e8eaed; }
+
+        /* ── Add Row ─────────────────────────────────────────────
+           Full width under the table: it is the only action taken
+           repeatedly, and a wide target is a cheap way to make a
+           repeated action fast. */
+        .add-row-bar {
+            margin: 14px 0 6px;
+        }
+
+        .btn-addrow {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 18px;
+            border: 1px dashed #b9c6bb;
+            border-radius: 10px;
+            background: #f4f9f5;
+            color: #2f6b3f;
+            font-size: 15px;
+        }
+
+        .btn-addrow:hover {
+            background: #e9f4ec;
+            border-color: #8fb59a;
+            border-style: solid;
+        }
+
+        .btn-addrow .btn-ico {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1;
+            width: auto;
+            height: auto;
         }
 
         .btn-primary {
@@ -434,11 +535,10 @@ html[dir="rtl"] .app-footer details.disclaimer-box[open] > summary::after {
          cost is that the bar leaves the flow, so body carries a
          matching padding-top below. -->
     <div class="button-group" id="topBar">
-        <button class="btn btn-primary" onclick="addRow()">➕ <span data-i18n="btnAddRow">Add Row</span></button>
-        <button class="btn btn-secondary" onclick="saveToJSON()">💾 <span data-i18n="btnSave">Save Work</span></button>
-        <button class="btn btn-secondary" onclick="document.getElementById('loadJSON').click()">📂 <span data-i18n="btnLoad">Open File</span></button>
-        <button class="btn btn-warning" onclick="exportToDOCX()">📄 <span data-i18n="btnDocx">Export DOCX</span></button>
-        <button class="btn btn-success" onclick="exportToExcelXLSX()">📊 <span data-i18n="btnExcel">Export Excel</span></button>
+        <button class="btn" onclick="saveToJSON()"><svg class="btn-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h9l3 3v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M7 3v4h6V3" class="cut"/><rect x="6" y="11" width="8" height="6" rx="1" class="cut"/></svg><span data-i18n="btnSave">Save Work</span></button>
+        <button class="btn" onclick="document.getElementById('loadJSON').click()"><svg class="btn-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4h4l1.5 2h7.5A1.5 1.5 0 0 1 18 7.5v7A1.5 1.5 0 0 1 16.5 16h-13A1.5 1.5 0 0 1 2 14.5z"/></svg><span data-i18n="btnLoad">Open File</span></button>
+        <button class="btn" onclick="exportToDOCX()"><svg class="btn-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2h7l4 4v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M12 2v4h4" class="cut"/><path d="M7 11h6M7 14h4" class="stroke"/></svg><span data-i18n="btnDocx">Export DOCX</span></button>
+        <button class="btn" onclick="exportToExcelXLSX()"><svg class="btn-ico" viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1.5"/><path d="M3 8h14M8 8v8M13 8v8" class="stroke"/></svg><span data-i18n="btnExcel">Export Excel</span></button>
     </div>
 
     <div class="container" style="position: relative;">
@@ -496,6 +596,17 @@ html[dir="rtl"] .app-footer details.disclaimer-box[open] > summary::after {
                 <tbody id="tableBody">
                 </tbody>
             </table>
+        </div>
+
+        <!-- Add Row sits BELOW the table, not in the toolbar. Entering a
+             long list means the cursor is already at the bottom of the
+             sheet; a button at the top of the viewport costs a scroll up
+             and a scroll back for every single line. -->
+        <div class="add-row-bar">
+            <button class="btn btn-addrow" onclick="addRow()">
+                <span class="btn-ico" aria-hidden="true">＋</span>
+                <span data-i18n="btnAddRow">Add Row</span>
+            </button>
         </div>
 
         <div class="total-section">
